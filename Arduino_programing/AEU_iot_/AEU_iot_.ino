@@ -4,8 +4,8 @@
 EncoderStepCounter encoder(18, 19);
 
 // Replace with your network credentials
-const char* ssid = "IoTAEU";
-const char* password = "aeuiot2019";
+const char* ssid = "AEU-STEM";
+const char* password = "aeustem2019";
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -44,7 +44,7 @@ void setup() {
   digitalWrite(output27, LOW);
   pinMode(32, OUTPUT);
   pinMode(33, OUTPUT);
-  pinMode(35, OUTPUT);
+  pinMode(25, OUTPUT);
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -64,7 +64,9 @@ void interrupt() {
   encoder.tick();
 }
 long int position = 0;
+
 void loop() {
+ 
   WiFiClient client = server.available();  // Listen for incoming clients
   signed char pos = encoder.getPosition();
   if (pos != 0) {
@@ -72,7 +74,9 @@ void loop() {
     encoder.reset();
   }
   int round = position / 446;
-  // Serial.println(round)
+  if (round == 0 ) {Serial.println(WiFi.localIP());}
+  else {Serial.println(round);}
+  
   if (client) {  // If a new client connects,
     currentTime = millis();
     previousTime = currentTime;
@@ -99,39 +103,39 @@ void loop() {
           if (header.indexOf("GET /27/1") >= 0) {
             Serial.println("GPIO 27 on");
             output27State = "on";
-            analogWrite(output27, 50);
+            analogWrite(output27, 100);
             analogWrite(output26, 0);
             outputStatus = false;
           } else if (header.indexOf("GET /27/0") >= 0) {
             Serial.println("GPIO 27 off");
             output27State = "off";
-            analogWrite(output26, 50);
+            analogWrite(output26, 100);
             analogWrite(output27, 0);
             outputStatus = true;
           } else if (header.indexOf("GET /32/1") >= 0) {
             Serial.println("Relay1 on");
             Relay = "on";
-            analogWrite(32, 1);
+            digitalWrite(32, 1);
           } else if (header.indexOf("GET /32/0") >= 0) {
             Serial.println("Relay1 off");
             Relay = "off";
-            analogWrite(32, 0);
+            digitalWrite(32, 0);
           } else if (header.indexOf("GET /33/1") >= 0) {
             Serial.println("Relay2 on");
             Relay2 = "on";
-            analogWrite(33, 1);
+            digitalWrite(33, 1);
           } else if (header.indexOf("GET /33/0") >= 0) {
             Serial.println("Relay2 off");
             Relay2 = "off";
-            analogWrite(33, 0);
-          } else if (header.indexOf("GET /35/1") >= 0) {
+            digitalWrite(33, 0);
+          } else if (header.indexOf("GET /25/1") >= 0) {
             Serial.println("Relay3 on");
             Relay3 = "on";
-            analogWrite(35, 1);
-          } else if (header.indexOf("GET /35/0") >= 0) {
+            digitalWrite(25, 1);
+          } else if (header.indexOf("GET /25/0") >= 0) {
             Serial.println("Relay3 off");
             Relay3 = "off";
-            analogWrite(35, 0);
+            digitalWrite(25, 0);
           }
 
           // Display the HTML web page
@@ -167,9 +171,9 @@ void loop() {
             client.println("<a style=\"display:block-inline; justify-content:center\" href=\"/33/0\"><button class=\"button button2\">LED2</button></a>");
           }
           if (Relay3 == "off") {
-            client.println("<a style=\"display:block-inline; justify-content:right\" href=\"/35/1\"><button class=\"button \">LED3</button></a>");
+            client.println("<a style=\"display:block-inline; justify-content:right\" href=\"/25/1\"><button class=\"button \">LED3</button></a>");
           } else {
-            client.println("<a style=\"display:block-inline; justify-content:right\" href=\"/35/0\"><button class=\"button button2\">LED3</button></a>");
+            client.println("<a style=\"display:block-inline; justify-content:right\" href=\"/25/0\"><button class=\"button button2\">LED3</button></a>");
           }
           // The HTTP response ends with another blank line
           client.println();
@@ -190,7 +194,7 @@ void loop() {
     Serial.println("Client disconnected.");
     Serial.println("");
   }
-  if (outputStatus == false && round >= 5) {
+  if (outputStatus == false && round >= 8) {
     analogWrite(output27, 0);
   } else if (outputStatus == true && round == 0) {
     analogWrite(output26, 0);
